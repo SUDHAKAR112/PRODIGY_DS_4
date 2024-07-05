@@ -1,0 +1,84 @@
+# Install required libraries if not already installed
+install.packages("rpart")
+install.packages("rpart.plot")
+install.packages("caret")
+install.packages("e1071") # for caret
+
+# Load required libraries
+library(rpart)
+library(rpart.plot)
+library(caret)
+
+# Load the dataset
+url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip"
+download.file(url, destfile = "bank-additional.zip")
+unzip("bank-additional.zip", files = "bank-additional/bank-additional-full.csv")
+
+# Read the CSV file
+data <- read.csv("bank-additional/bank-additional-full.csv", sep = ";")
+
+# Explore the data
+str(data)
+
+
+summary(data)
+
+# Convert categorical variables to factors
+data$job <- as.factor(data$job)
+data$marital <- as.factor(data$marital)
+data$education <- as.factor(data$education)
+data$default <- as.factor(data$default)
+data$housing <- as.factor(data$housing)
+data$loan <- as.factor(data$loan)
+data$contact <- as.factor(data$contact)
+data$month <- as.factor(data$month)
+data$day_of_week <- as.factor(data$day_of_week)
+data$poutcome <- as.factor(data$poutcome)
+data$y <- as.factor(data$y)
+
+# Split the data into training and testing sets
+set.seed(123) # for reproducibility
+trainIndex <- createDataPartition(data$y, p = 0.8, list = FALSE)
+trainData <- data[trainIndex,]
+testData <- data[-trainIndex,]
+
+# Train the decision tree model
+model <- rpart(y ~ ., data = trainData, method = "class")
+
+# Visualize the decision tree
+rpart.plot(model)
+
+# Make predictions on the test set
+predictions <- predict(model, testData, type = "class")
+
+# Confusion matrix to evaluate the model
+confusionMatrix(predictions, testData$y)
+
+# Accuracy of the model
+accuracy <- sum(predictions == testData$y) / nrow(testData)
+print(paste("Accuracy:", round(accuracy, 4)))
+
+# Fine-tune the model by adjusting hyperparameters
+model_tuned <- rpart(y ~ ., data = trainData, method = "class", 
+                     control = rpart.control(cp = 0.01, minsplit = 20, maxdepth = 10))
+
+# Visualize the tuned decision tree
+rpart.plot(model_tuned)
+
+# Make predictions with the tuned model
+predictions_tuned <- predict(model_tuned, testData, type = "class")
+
+# Evaluate the tuned model
+confusionMatrix(predictions_tuned, testData$y)
+accuracy_tuned <- sum(predictions_tuned == testData$y) / nrow(testData)
+print(paste("Tuned Accuracy:", round(accuracy_tuned, 4)))
+
+
+
+
+
+
+
+
+
+
