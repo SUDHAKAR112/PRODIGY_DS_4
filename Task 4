@@ -1,0 +1,62 @@
+# Install and load necessary libraries
+install.packages(c("tidyverse", "tidytext", "syuzhet", "lubridate", "wordcloud", "reshape2"))
+library(tidyverse)
+library(tidytext)
+library(syuzhet)
+library(lubridate)
+library(wordcloud)
+library(reshape2)
+# Load the data
+data <- read.csv('social_media_data.csv')
+
+# Display the first few rows of the dataset
+head(data)
+
+# Convert text column to character
+data$text <- as.character(data$text)
+
+# Convert date column to Date type (assuming the date column is named 'date')
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+# Perform sentiment analysis using the syuzhet package
+data$sentiment <- get_nrc_sentiment(data$text)
+
+# Calculate the dominant sentiment for each post
+data$dominant_sentiment <- colnames(data$sentiment)[max.col(data$sentiment, ties.method = "first")]
+
+# Display the sentiment distribution
+table(data$dominant_sentiment)
+# Plot sentiment distribution
+ggplot(data, aes(x = dominant_sentiment)) +
+  geom_bar(fill = "skyblue") +
+  theme_minimal() +
+  labs(title = "Sentiment Distribution", x = "Sentiment", y = "Count")
+# Group by date and sentiment
+sentiment_over_time <- data %>%
+  group_by(date, dominant_sentiment) %>%
+  summarize(count = n()) %>%
+  spread(key = dominant_sentiment, value = count, fill = 0)
+
+# Plot sentiment over time
+sentiment_over_time_melt <- melt(sentiment_over_time, id = "date")
+
+ggplot(sentiment_over_time_melt, aes(x = date, y = value, color = variable)) +
+  geom_line() +
+  theme_minimal() +
+  labs(title = "Sentiment Over Time", x = "Date", y = "Count", color = "Sentiment")
+# Function to generate word cloud for each sentiment
+generate_wordcloud <- function(sentiment) {
+  text <- data %>% filter(dominant_sentiment == sentiment) %>% pull(text)
+  text_corpus <- Corpus(VectorSource(text))
+  text_corpus <- text_corpus %>%
+    tm_map(removePunctuation) %>%
+    tm_map(removeNumbers) %>%
+    tm_map(tolower) %>%
+    tm_map(removeWords, stopwords("en")) %>%
+    tm_map(stripWhitespace)
+  wordcloud(text_corpus, max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+}
+
+# Generate word clouds for each sentiment
+generate_wordcloud("positive")
+generate_wordcloud("negative")
+generate_wordcloud("neutral")
