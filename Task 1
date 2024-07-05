@@ -1,0 +1,24 @@
+# Sample data for gender distribution
+gender <- c("Male", "Female")
+count <- c(45, 55)
+
+# Creating the bar chart
+barplot(count, names.arg=gender, col=c("blue", "pink"), 
+        xlab="Gender", ylab="Count", main="Gender Distribution")
+
+
+
+
+Histogram for Age Distribution
+Here's the R code to create a histogram for age distribution:
+
+r code
+# Sample data for age distribution
+ages <- c(22, 25, 30, 35, 28, 40, 22, 27, 29, 33, 31, 26, 38, 45, 21, 36, 39, 23, 34, 37, 41, 32, 30, 24, 29)
+
+# Creating the histogram
+hist(ages, breaks=10, col="green", border="black", 
+     xlab="Age", ylab="Frequency", 
+     main="Age Distribution")
+
+
