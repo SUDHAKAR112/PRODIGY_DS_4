@@ -1,0 +1,72 @@
+# Install and load necessary libraries
+install.packages(c("tidyverse", "lubridate", "ggplot2", "sf", "leaflet", "maps"))
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(sf)
+library(leaflet)
+library(maps)
+# Load the data
+data <- read.csv('traffic_accident_data.csv')
+
+# Display the first few rows of the dataset
+head(data)
+
+# Convert relevant columns to appropriate data types
+data$datetime <- ymd_hms(data$datetime)  # Assuming 'datetime' column contains date and time of the accident
+data$road_condition <- as.factor(data$road_condition)
+data$weather <- as.factor(data$weather)
+
+# Handle missing values if necessary
+data <- na.omit(data)
+
+# Extract hour from datetime
+data$hour <- hour(data$datetime)
+
+# Plot number of accidents by hour of day
+ggplot(data, aes(x = hour)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Number of Accidents by Hour of Day", x = "Hour of Day", y = "Number of Accidents")
+# Plot number of accidents by road condition
+ggplot(data, aes(x = road_condition)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Number of Accidents by Road Condition", x = "Road Condition", y = "Number of Accidents")
+
+# Plot number of accidents by weather condition
+ggplot(data, aes(x = weather)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Number of Accidents by Weather Condition", x = "Weather Condition", y = "Number of Accidents")
+
+# Plot number of accidents by road condition
+ggplot(data, aes(x = road_condition)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Number of Accidents by Road Condition", x = "Road Condition", y = "Number of Accidents")
+
+# Plot number of accidents by weather condition
+ggplot(data, aes(x = weather)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Number of Accidents by Weather Condition", x = "Weather Condition", y = "Number of Accidents")
+
+# Assuming 'latitude' and 'longitude' columns contain the geographical coordinates of the accidents
+# Load map data for plotting
+world_map <- map_data("world")
+
+# Plot accident hotspots on a map
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), fill = "lightgrey", color = "white") +
+  geom_point(data = data, aes(x = longitude, y = latitude), color = "red", alpha = 0.5, size = 1) +
+  theme_minimal() +
+  labs(title = "Accident Hotspots", x = "Longitude", y = "Latitude")
+
+# Create an interactive map with Leaflet
+leaflet(data) %>%
+  addTiles() %>%
+  addCircleMarkers(~longitude, ~latitude, color = "red", radius = 3, opacity = 0.5) %>%
+  setView(lng = mean(data$longitude), lat = mean(data$latitude), zoom = 10) %>%
+  addLegend("bottomright", colors = "red", labels = "Accidents", title = "Legend")
+
