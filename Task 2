@@ -1,0 +1,62 @@
+# Load necessary libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+
+# Load the Titanic dataset
+titanic <- read.csv("titanic.csv")
+
+# View the first few rows of the dataset
+head(titanic)
+
+# Check for missing values
+colSums(is.na(titanic))
+
+# Handle missing values
+# For simplicity, let's remove rows with missing values
+titanic <- titanic %>% drop_na()
+
+# Convert categorical variables to factors
+titanic$Pclass <- as.factor(titanic$Pclass)
+titanic$Sex <- as.factor(titanic$Sex)
+titanic$Embarked <- as.factor(titanic$Embarked)
+
+# Summary statistics
+summary(titanic)
+
+# Plot the distribution of Survived
+ggplot(titanic, aes(x = Survived)) +
+  geom_bar() +
+  labs(title = "Distribution of Survived", x = "Survived", y = "Count")
+
+# Plot survival rate by gender
+ggplot(titanic, aes(x = Sex, fill = Survived)) +
+  geom_bar(position = "fill") +
+  labs(title = "Survival Rate by Gender", x = "Gender", y = "Proportion")
+
+# Plot survival rate by passenger class
+ggplot(titanic, aes(x = Pclass, fill = Survived)) +
+  geom_bar(position = "fill") +
+  labs(title = "Survival Rate by Passenger Class", x = "Passenger Class", y = "Proportion")
+
+# Plot age distribution by survived
+ggplot(titanic, aes(x = Age, fill = Survived)) +
+  geom_histogram(bins = 30, alpha = 0.5, position = "identity") +
+  labs(title = "Age Distribution by Survived", x = "Age", y = "Count")
+
+# Compute correlation matrix for numerical variables
+num_vars <- titanic %>% select_if(is.numeric)
+cor_matrix <- cor(num_vars, use = "complete.obs")
+
+# Print the correlation matrix
+print(cor_matrix)
+
+# Pairwise relationships
+pairs(num_vars)
+
+# Plot relationship between Age, Fare, and Survival
+ggplot(titanic, aes(x = Age, y = Fare, color = Survived)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Relationship between Age, Fare, and Survival", x = "Age", y = "Fare")
+
+
